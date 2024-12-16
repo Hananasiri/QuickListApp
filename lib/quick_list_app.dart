@@ -43,6 +43,16 @@ class ToDoController extends GetxController {
     tasks.add({'title': title, 'dueDate': dueDate});
     saveTasks();
   }
+
+  void removeTask(int index) {
+    tasks.removeAt(index);
+    saveTasks();
+  }
+
+  void editTask(int index, String newTitle, String newDueDate) {
+    tasks[index] = {'title': newTitle, 'dueDate': newDueDate};
+    saveTasks();
+  }
 }
 
 class QuickListWidget extends StatelessWidget {
@@ -88,11 +98,53 @@ class QuickListWidget extends StatelessWidget {
     );
   }
 
+  void _showEditTaskDialog(BuildContext context, int index) {
+    String? title = controller.tasks[index]['title'];
+    String? dueDate = controller.tasks[index]['dueDate'];
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Task'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: const InputDecoration(labelText: 'Task Title'),
+              controller: TextEditingController(text: title),
+              onChanged: (value) => title = value,
+            ),
+            TextField(
+              decoration: const InputDecoration(labelText: 'Due Date'),
+              controller: TextEditingController(text: dueDate),
+              onChanged: (value) => dueDate = value,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              if (title != null && dueDate != null) {
+                controller.editTask(index, title!, dueDate!);
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Save'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('QuickList'),
+        title: const Text('Quick List'),
       ),
       body: Obx(() {
         if (controller.tasks.isEmpty) {
@@ -105,6 +157,19 @@ class QuickListWidget extends StatelessWidget {
               return ListTile(
                 title: Text(task['title'] ?? ''),
                 subtitle: Text('Due: ${task['dueDate']}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () => _showEditTaskDialog(context, index),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => controller.removeTask(index),
+                    ),
+                  ],
+                ),
               );
             },
           );
