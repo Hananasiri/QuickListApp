@@ -1,4 +1,4 @@
-# untitled2
+# QuickListApp
 
 A new Flutter project.
 
